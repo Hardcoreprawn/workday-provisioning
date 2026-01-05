@@ -1,0 +1,199 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Workday Provisioning Configuration Schema",
+  "description": "JSON Schema for validating Workday provisioning configurations",
+  "type": "object",
+  "properties": {
+    "ExtractionDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the configuration was extracted"
+    },
+    "TenantId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Azure AD Tenant ID"
+    },
+    "ServicePrincipals": {
+      "type": "array",
+      "description": "List of Workday service principals",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Service Principal Object ID"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Display name (should contain 'Workday')"
+          },
+          "appId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Application ID"
+          },
+          "servicePrincipalNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Service Principal Names"
+          },
+          "appRoles": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "displayName": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "required": ["id", "displayName"]
+      }
+    },
+    "ProvisioningConfigs": {
+      "type": "array",
+      "description": "Provisioning configuration objects",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ServicePrincipalId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "ServicePrincipalName": {
+            "type": "string"
+          },
+          "SyncJobId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "SyncJobStatus": {
+            "type": "string",
+            "enum": ["Enabled", "Disabled", "Running", "Paused", "Quarantined"],
+            "description": "Current status of sync job"
+          },
+          "SyncJobProgress": {
+            "type": "object",
+            "properties": {
+              "totalModifiedEntries": {
+                "type": "integer"
+              },
+              "totalProcessedEntries": {
+                "type": "integer"
+              },
+              "progressPercentage": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              }
+            }
+          },
+          "SyncSchedule": {
+            "type": "object",
+            "properties": {
+              "interval": {
+                "type": "integer",
+                "description": "Interval in minutes"
+              },
+              "frequency": {
+                "type": "string",
+                "enum": ["minute", "hour", "day", "week"]
+              }
+            }
+          },
+          "Schema": {
+            "type": "object",
+            "properties": {
+              "Mappings": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "SourceObjectName": {
+                      "type": "string"
+                    },
+                    "TargetObjectName": {
+                      "type": "string"
+                    },
+                    "AttributeMappings": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "source": {
+                            "type": "string",
+                            "description": "Workday attribute name"
+                          },
+                          "target": {
+                            "type": "string",
+                            "description": "Azure AD attribute name"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": ["String", "Boolean", "Reference", "Integer", "DateTime"]
+                          },
+                          "expression": {
+                            "type": "string",
+                            "description": "Optional transformation expression"
+                          },
+                          "defaultValue": {
+                            "description": "Default value if source is null"
+                          }
+                        },
+                        "required": ["source", "target"]
+                      }
+                    }
+                  },
+                  "required": ["SourceObjectName", "TargetObjectName"]
+                }
+              }
+            }
+          }
+        },
+        "required": ["ServicePrincipalId", "ServicePrincipalName", "SyncJobId", "SyncJobStatus"]
+      }
+    },
+    "AttributeMappings": {
+      "type": "array",
+      "description": "Detailed attribute mapping configurations",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ServicePrincipal": {
+            "type": "string"
+          },
+          "SyncJobId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "SourceObjectName": {
+            "type": "string"
+          },
+          "TargetObjectName": {
+            "type": "string"
+          },
+          "AttributeMappings": {
+            "type": "string",
+            "description": "JSON string of attribute mappings (parsed separately)"
+          }
+        },
+        "required": ["ServicePrincipal", "SyncJobId", "SourceObjectName", "TargetObjectName"]
+      }
+    }
+  },
+  "required": ["TenantId"],
+  "additionalProperties": false
+}
